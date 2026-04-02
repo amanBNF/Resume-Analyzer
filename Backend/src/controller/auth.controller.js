@@ -2,6 +2,7 @@ require('dotenv').config();
 const userModel = require('../models/user.model');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const tokenBlacklistModel = require('../models/blacklist.model');
 
 /**
  * @name registerUserController
@@ -78,7 +79,7 @@ async function loginUserController(req, res) {
     )
 
     res.cookie('token', token);
-    
+
     res.status(200).json({
         message : "User logged in successfully",
         user : {
@@ -89,7 +90,46 @@ async function loginUserController(req, res) {
     })
 }
 
+/**
+ * @name logoutUserController
+ * @description Controller to handle user logout
+ * @access Public
+ */
+
+async function logoutUserController(req, res){
+    const token = req.cookies.token;
+
+    if(token){
+        await tokenBlacklistModel.create({token});
+    }
+
+    res.clearCookie('token');
+
+    res.status(200).json({message : "User logged out successfully"});
+}
+
+/**
+ * @name getMeController
+ * @description Controller to get the details of the logged in user
+ * @access Private
+ */
+
+async function getMeController(req, res) {
+    const user = await userModel.findById(req.user.id);
+
+    res.status(200).json({
+        message : "User details fetched successfully",
+        user : {
+            id : user._id,
+            username : user.username,
+            email : user.email
+        }
+    })
+}
+
 module.exports = {
     registerUserController,
-    loginUserController
+    loginUserController,
+    logoutUserController,
+    getMeController
 }
