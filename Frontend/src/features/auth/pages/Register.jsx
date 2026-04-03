@@ -12,10 +12,16 @@ const Register = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
-  const handleSubmit = (e) => {
+  const { handleRegister, loading } = useAuth();
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    handleRegister({ username, email, password });
+    await handleRegister({ username, email, password });
     navigate('/');
+  }
+
+  if(loading){
+    return (<main><LoadingScreen /></main>)
   }
 
   return (
